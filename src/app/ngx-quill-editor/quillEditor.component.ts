@@ -32,7 +32,6 @@ const Quill = require('quill');
 })
 export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor, OnChanges {
 
-  // 基本数据
   quillEditor: any;
   editorElem: HTMLElement;
   content: any;
@@ -60,10 +59,8 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
     ]
   };
 
-  // 传入配置
   @Input() options: Object;
 
-  // 派发事件
   @Output() blur: EventEmitter<any> = new EventEmitter();
   @Output() focus: EventEmitter<any> = new EventEmitter();
   @Output() ready: EventEmitter<any> = new EventEmitter();
@@ -73,10 +70,8 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
   onModelChange: Function = () => {};
   onModelTouched: Function = () => {};
 
-  // 注入Dom
   constructor(private elementRef: ElementRef) { }
 
-  // 视图加载完成后执行初始化
   ngAfterViewInit() {
     this.editorElem = this.elementRef.nativeElement.children[0];
 
@@ -88,12 +83,10 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
       boundary: document.body
     }, this.options || {}));
 
-    // 写入内容
     if (this.content) {
       this.quillEditor.pasteHTML(this.content);
     }
 
-    // 广播事件
     this.ready.emit(this.quillEditor);
 
     // mark model as touched if editor lost focus
@@ -108,6 +101,7 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
 
     // update model if text changes
     this.quillEditor.on('text-change', (delta: any, oldDelta: any, source: any) => {
+      
       let html = this.editorElem.children[0].innerHTML;
       const text = this.quillEditor.getText();
 
@@ -118,19 +112,19 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
       this.change.emit({
         editor: this.quillEditor,
         html: html,
-        text: text
+        text: text,
+        delta: delta,
+        source: source
       });
     });
   }
 
-  // 数据变更时
   ngOnChanges(changes: SimpleChanges) {
     if (changes['readOnly'] && this.quillEditor) {
       this.quillEditor.enable(!changes['readOnly'].currentValue);
     }
   }
 
-  // 写数据
   writeValue(currentValue: any) {
     this.content = currentValue;
 
@@ -143,12 +137,10 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
     }
   }
 
-  // 注册事件
   registerOnChange(fn: Function): void {
     this.onModelChange = fn;
   }
 
-  // 注册事件
   registerOnTouched(fn: Function): void {
     this.onModelTouched = fn;
   }
