@@ -13,3 +13,4 @@ app.get('/*', function (req, res) {
 
 // default Heroku port
 app.listen(process.env.PORT || 5001);
+console.log('Listening on http://localhost:5001');
