@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { TexteditorComponent } from './texteditor/texteditor.component';
 import { QuillEditorModule } from './ngx-quill-editor/quillEditor.module';
-import { ClientService } from './texteditor/client.service';
+import { ClientService } from './texteditor/services/client.service';
+import { CursorService } from './texteditor/services/cursorservice.service';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,7 @@ import { ClientService } from './texteditor/client.service';
     FormsModule,
     QuillEditorModule
   ],
-  providers: [ClientService],
+  providers: [ClientService,CursorService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

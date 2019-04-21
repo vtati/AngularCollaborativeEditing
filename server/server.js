@@ -5,7 +5,9 @@ var richText = require('rich-text');
 var WebSocket = require('ws');
 var WebSocketJSONStream = require('websocket-json-stream');
 var sharedb = require('sharedb-mongo')('mongodb://localhost:27017/test');
+var uuid = require('uuid');
 const path = require('path');
+var debug = require('debug')('servercode');
 
 ShareDB.types.register(richText.type);
 var backend = new ShareDB({ 'db': sharedb });
@@ -28,23 +30,29 @@ function createDoc(callback) {
 function startServer() {
   // Create a web server to serve files and listen to WebSocket connections
   var app = express();
-  app.use(express.static('static'));
-  app.use(express.static('node_modules/quill/dist'));
-  // Send all requests to index.html
-  // app.get('/*', function (req, res) {
-  //   res.sendFile('dist/sharedbAngular/index.html');
-  // });
-
-  // Serve static files
-  // app.use(express.static('dist/sharedbAngular'));
 
   var server = http.createServer(app);
 
   // Connect any incoming WebSocket connection to ShareDB
   var wss = new WebSocket.Server({ server: server });
   wss.on('connection', function (ws, req) {
+    // generate an id for the socket
+    ws.id = uuid();
+    ws.isAlive = true;
+
+    debug('A new client (%s) connected.', ws.id);
+
     var stream = new WebSocketJSONStream(ws);
     backend.listen(stream);
+
+    ws.on('pong', function (data, flags) {
+      debug('Pong received. (%s)', ws.id);
+      ws.isAlive = true;
+    });
+
+    ws.on('error', function (error) {
+      debug('Client connection errored (%s). (Error: %s)', ws.id, error);
+    });
   });
 
 

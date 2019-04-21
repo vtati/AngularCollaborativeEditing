@@ -2,7 +2,7 @@
 const path = require('path');
 const express = require('express');
 const app = express();
-
+console.log(__dirname);
 // Serve static files
 app.use(express.static(__dirname + '/dist/sharedbAngular'));
 

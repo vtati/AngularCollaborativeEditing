@@ -11,6 +11,8 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import QuillCursors from 'quill-cursors';
+
 declare var require: any;
 const Quill = require('quill');
 
@@ -36,14 +38,20 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
   editorElem: HTMLElement;
   content: any;
   defaultModules = {
+    cursors: {
+      autoRegisterListener: false
+    },
+    history: {
+      userOnly: true
+    },
     toolbar: [
       ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
       ['blockquote', 'code-block'],
 
       [{ 'header': 1 }, { 'header': 2 }],               // custom button values
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-      [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      [{ 'script': 'sub' }, { 'script': 'super' }],      // superscript/subscript
+      [{ 'indent': '-1' }, { 'indent': '+1' }],          // outdent/indent
       [{ 'direction': 'rtl' }],                         // text direction
 
       [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
@@ -67,10 +75,12 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
   @Output() change: EventEmitter<any> = new EventEmitter();
 
   // ...
-  onModelChange: Function = () => {};
-  onModelTouched: Function = () => {};
+  onModelChange: Function = () => { };
+  onModelTouched: Function = () => { };
 
-  constructor(private elementRef: ElementRef) { }
+  constructor(private elementRef: ElementRef) {
+    Quill.register('modules/cursors', QuillCursors);
+  }
 
   ngAfterViewInit() {
     this.editorElem = this.elementRef.nativeElement.children[0];
@@ -83,6 +93,8 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
       boundary: document.body
     }, this.options || {}));
 
+    var cursorsModule = this.quillEditor.getModule('cursors');
+
     if (this.content) {
       this.quillEditor.pasteHTML(this.content);
     }
@@ -93,15 +105,21 @@ export class QuillEditorComponent implements AfterViewInit, ControlValueAccessor
     this.quillEditor.on('selection-change', (range: any) => {
       if (!range) {
         this.onModelTouched();
-        this.blur.emit(this.quillEditor);
+        this.blur.emit({
+          editor: this.quillEditor,
+          range: range
+        });
       } else {
-        this.focus.emit(this.quillEditor);
+        this.focus.emit({
+          editor: this.quillEditor,
+          range: range
+        });
       }
     });
 
     // update model if text changes
     this.quillEditor.on('text-change', (delta: any, oldDelta: any, source: any) => {
-      
+
       let html = this.editorElem.children[0].innerHTML;
       const text = this.quillEditor.getText();
 

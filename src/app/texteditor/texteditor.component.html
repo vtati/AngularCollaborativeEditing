@@ -1,3 +1,46 @@
-<quill-editor [(ngModel)]="editorContent" [options]="editorOptions" (blur)="onEditorBlured($event)"
-    (focus)="onEditorFocused($event)" (ready)="onEditorCreated($event)" (change)="onContentChanged($event)">
-</quill-editor>
+<div class="layout">
+    <div class="info-container">
+        <div id="connect-panel">
+            <h3>Username</h3>
+            Set your username and connect to edit:<br><input #usernameInput id="usernameInput" type="text"><br>
+            <button id="connect-btn" (click)="connect_click($event)">Connect</button>
+        </div>
+        <div id="users-panel">
+            <h3>Users editing</h3>
+            <ul id="users-list">
+                <li *ngFor="let item of cursorService.connections; index as i; trackBy: trackByFn"
+                    [style.color]="item.color">
+                    <div class="user-name"><strong>{{item.name}}</strong> <span
+                            *ngIf="item.id===cursorService.localConnection.id">(You)</span></div>
+                    <div *ngIf="item.range;else rangeBlock">
+                        <div *ngIf="item.id===cursorService.localConnection.id;else elseBlock" class="user-data">
+                            <div>Index: {{editor.getSelection().index}}</div>
+                            <div>Length:{{editor.getSelection().length}}</div>
+                        </div>
+                        <ng-template #elseBlock>
+                            <div class="user-data">
+                                <div>Index: {{item.range.index}}</div>
+                                <div>Length:{{item.range.length}}</div>
+                            </div>
+                        </ng-template>
+                    </div>
+                    <ng-template #rangeBlock>
+                        (Not focusing on editor.)
+                    </ng-template>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="editor-container">
+        <div id="editor" class="ql-container ql-snow ql-disabled">
+            <quill-editor [(ngModel)]="editorContent" [options]="editorOptions" (blur)="onEditorBlured($event)"
+                (focus)="onEditorFocused($event)" (ready)="onEditorCreated($event)" (change)="onContentChanged($event)">
+            </quill-editor>
+            <div class="ql-clipboard" contenteditable="true" tabindex="-1"></div>
+            <div class="ql-tooltip ql-hidden"><a class="ql-preview" target="_blank" href="about:blank"></a><input
+                    type="text" data-formula="e=mc^2" data-link="https://quilljs.com" data-video="Embed URL"><a
+                    class="ql-action"></a><a class="ql-remove"></a></div>
+            <div class="ql-cursors"></div>
+        </div>
+    </div>
+</div>

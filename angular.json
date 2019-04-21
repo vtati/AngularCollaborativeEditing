@@ -25,7 +25,7 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": [],
+            "scripts": ["node_modules/quill-cursors/dist/quill-cursors.js"],
             "es5BrowserSupport": true
           },
           "configurations": {
