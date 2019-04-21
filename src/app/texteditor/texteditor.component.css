@@ -44,7 +44,8 @@
     width: 80%; }
   
   #users-panel {
-    display: none; }
+    display: block; 
+  }
   
   #users-panel ul {
     list-style: none;

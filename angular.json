@@ -23,7 +23,8 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "node_modules/quill-cursors/dist/quill-cursors.css"
             ],
             "scripts": ["node_modules/quill-cursors/dist/quill-cursors.js"],
             "es5BrowserSupport": true
