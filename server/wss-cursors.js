@@ -3,16 +3,19 @@ var _ = require('lodash');
 var uuid = require('uuid');
 var debug = require('debug')('quill-sharedb-cursors:cursors');
 
-module.exports = function(server) {
+module.exports = function (server) {
 
   function notifyConnections(sourceId) {
-    connections.forEach(function(connection) {
-      sessions[connection.id].send(JSON.stringify({
-        id: connection.id,
-        sourceId: sourceId,
-        connections: connections
-      }));
-    });
+    var currConnection = connections.filter(c => c.id === sourceId)[0];
+    if (currConnection) {
+      connections.filter(c => c.documentId === currConnection.documentId).forEach(function (connection) {
+        sessions[connection.id].send(JSON.stringify({
+          id: connection.id,
+          sourceId: sourceId,
+          connections: connections
+        }));
+      });
+    }
   }
 
   var sessions = {};
@@ -22,7 +25,7 @@ module.exports = function(server) {
     noServer: true
   });
 
-  wss.on('connection', function(ws, req) {
+  wss.on('connection', function (ws, req) {
 
     // generate an id for the socket
     ws.id = uuid();
@@ -30,7 +33,7 @@ module.exports = function(server) {
 
     debug('A new client (%s) connected.', ws.id);
 
-    ws.on('message', function(data) {
+    ws.on('message', function (data) {
       var connectionIndex;
 
       data = JSON.parse(data);
@@ -61,8 +64,8 @@ module.exports = function(server) {
         else {
           // If this connection can't be found, ignore
           if (!~(connectionIndex = _.findIndex(connections, {
-              'id': data.id
-            }))) {
+            'id': data.id
+          }))) {
 
             return;
           }
@@ -78,14 +81,14 @@ module.exports = function(server) {
       }
     });
 
-    ws.on('close', function(code, reason) {
+    ws.on('close', function (code, reason) {
 
       debug('Client connection closed (%s). (Code: %s, Reason: %s)', ws.id, code, reason);
 
       // Find connection index and remove it from hashtable
       if (~(connectionIndex = _.findIndex(connections, {
-          'id': ws.id
-        }))) {
+        'id': ws.id
+      }))) {
 
         debug('Connection removed:\n%O', connections[connectionIndex]);
 
@@ -99,18 +102,18 @@ module.exports = function(server) {
       notifyConnections(ws.id);
     });
 
-    ws.on('error', function(error) {
+    ws.on('error', function (error) {
       debug('Client connection errored (%s). (Error: %s)', ws.id, error);
 
       if (~(connectionIndex = _.findIndex(connections, {
-          'id': ws.id
-        }))) {
+        'id': ws.id
+      }))) {
 
         debug('Errored connection:\n%O', connections[connectionIndex]);
       }
     });
 
-    ws.on('pong', function(data) {
+    ws.on('pong', function (data) {
       debug('Pong received. (%s)', ws.id);
       ws.isAlive = true;
     });
@@ -118,8 +121,8 @@ module.exports = function(server) {
   });
 
   // Sockets Ping, Keep Alive
-  setInterval(function() {
-    wss.clients.forEach(function(ws) {
+  setInterval(function () {
+    wss.clients.forEach(function (ws) {
       if (ws.isAlive === false) return ws.terminate();
 
       ws.isAlive = false;

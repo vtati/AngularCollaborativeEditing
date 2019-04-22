@@ -18,8 +18,6 @@ export class ClientService {
     this.socket = new ReconnectingWebSocket(((location.protocol === 'https:') ? 'wss' : 'ws') + '://localhost:5000/sharedb');
     this.connection = new sharedb.Connection(this.socket);
 
-    // Create local Doc instance mapped to 'examples' collection document with id 'counter'
-    this.doc = this.connection.get('documents', 'richtext');
 
     // Get initial value of document and subscribe to changes
     //this.doc.subscribe(function (a) { alert(this.doc.data) });

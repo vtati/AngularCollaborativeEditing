@@ -1,9 +1,4 @@
 var express = require('express');
-// var path = require('path');
-// var favicon = require('serve-favicon');
-// var logger = require('morgan');
-// var cookieParser = require('cookie-parser');
-// var bodyParser = require('body-parser');
 var url = require('url');
 
 var app = express();
@@ -14,20 +9,20 @@ var backend = require('./sharedb-server');
 var wssShareDB = require('./wss-sharedb')(server);
 var wssCursors = require('./wss-cursors')(server);
 
-createDoc(startServer);
-
-function createDoc(callback) {
-  var connection = backend.connect();
-  var doc = connection.get('documents', 'richtext');
-  doc.fetch(function (err) {
-    if (err) throw err;
-    if (doc.type === null) {
-      doc.create([{ insert: 'Hi!' }], 'rich-text', callback);
-      return;
-    }
-    callback();
-  });
-}
+//createDoc(startServer);
+startServer();
+// function createDoc(callback) {
+//   var connection = backend.connect();
+//   var doc = connection.get('documents', 'richtext');
+//   doc.fetch(function (err) {
+//     if (err) throw err;
+//     if (doc.type === null) {
+//       doc.create([{ insert: 'Hi!' }], 'rich-text', callback);
+//       return;
+//     }
+//     callback();
+//   });
+// }
 
 function startServer() {
   server.on('upgrade', (request, socket, head) => {

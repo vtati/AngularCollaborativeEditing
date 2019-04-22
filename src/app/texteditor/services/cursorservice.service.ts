@@ -9,10 +9,13 @@ export class CursorConnection {
   range: any;
   name: string;
   color: any;
-  constructor(name: string, color: any) {
+  documentId: string;
+
+  constructor(name: string, color: any, documentId?: string) {
     this.id = null;
     this.name = name;
     this.color = color;
+    this.documentId = documentId;
   }
 }
 
@@ -25,8 +28,11 @@ export class CursorService {
   public localConnection: any;
   public connections: Array<any> = [];
   public cursorsUpdate: EventEmitter<any> = new EventEmitter<any>();
-
+  
   constructor() {
+  }
+
+  public configureCursors(documentId:string) {
     var self = this;
 
     // this.socket = new ReconnectingWebSocket('ws://' + "localhost:5000/cursors");
@@ -35,7 +41,8 @@ export class CursorService {
       null,
       chance.color({
         format: 'hex'
-      })
+      }),
+      documentId
     );
 
     this.socket.onopen = function () {
@@ -101,21 +108,15 @@ export class CursorService {
       }
 
       // Update connections array
-      self.connections = data.connections;
+      self.connections = data.connections.filter(c=>c.documentId === documentId);
       self.cursorsUpdate.emit({
         detail: {
           source: source,
           removedConnections: removedConnections
         }
       });
-      // Fire event
-      // document.dispatchEvent(new CustomEvent('cursors-update', {
-      //   detail: {
-      //     source: source,
-      //     removedConnections: removedConnections
-      //   }
-      // }));
     };
+
   }
 
   update() {

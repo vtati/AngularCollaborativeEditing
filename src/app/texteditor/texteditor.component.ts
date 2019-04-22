@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, Inject, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, Inject, AfterViewInit, ElementRef, ViewChild, Input } from '@angular/core';
 import { ClientService } from './services/client.service';
 import { CursorService } from './services/cursorservice.service';
 import { Utils } from './utils/util';
@@ -9,19 +9,36 @@ import { Utils } from './utils/util';
 })
 export class TexteditorComponent implements OnInit, AfterViewInit {
   public editor: any;
+  public showConnectPanel: boolean = true;
   userlistElem: any;
   usernameElem: any;
   @ViewChild('usernameInput') usernameInputRef: ElementRef;
   // @ViewChild('users-list') userlistInputRef: ElementRef;
   public editorContent: string = '';
-  cursorsModule:any;
+  cursorsModule: any;
   public editorOptions: any = {
     placeholder: "insert content..."
   };
 
+  @Input() documentId: string;
+
   constructor(@Inject(ClientService) private clientService: ClientService,
     @Inject(CursorService) public cursorService: CursorService) {
+  }
+  ngOnInit() {
     let self = this;
+    // Create local Doc instance mapped to 'examples' collection document with id 'counter'
+    this.clientService.doc = this.clientService.connection.get('documents', this.documentId);
+
+    this.clientService.doc.fetch(function (err) {
+      if (err) throw err;
+      if (self.clientService.doc.type === null) {
+        self.clientService.doc.create([{ insert: 'Hi!' }], 'rich-text');
+        return;
+      }
+      //callback();
+    });
+
     this.clientService.doc.subscribe(function (err) {
       if (err) throw err;
       self.editor.setContents(self.clientService.doc.data);
@@ -33,24 +50,26 @@ export class TexteditorComponent implements OnInit, AfterViewInit {
 
       self.clientService.doc.on('nothing pending', self.debouncedSendCursorData);
 
-      self.cursorService.cursorsUpdate.subscribe((data:any)=>{
-        data.detail.removedConnections.forEach(function(connection) {
+      self.cursorService.cursorsUpdate.subscribe((data: any) => {
+        data.detail.removedConnections.forEach(function (connection) {
           if (self.cursorService.connections[connection.id])
-          self.cursorService.connections.splice(connection.id,1);
+            self.cursorService.connections.splice(connection.id, 1);
         });
-    
+
         self.updateCursors(data.detail.source);
       });
 
     });
+    
+    this.cursorService.configureCursors(this.documentId);
   }
-  
+
   updateCursors(source) {
-    var self=this;
+    var self = this;
     var activeConnections = {},
       updateAll = Object.keys(self.cursorsModule.cursors).length == 0;
 
-    self.cursorService.connections.forEach(function(connection) {
+    self.cursorService.connections.forEach(function (connection) {
       if (connection.id != self.cursorService.localConnection.id) {
 
         // Update cursor that sent the update, source (or update all if we're initting)
@@ -69,7 +88,7 @@ export class TexteditorComponent implements OnInit, AfterViewInit {
     });
 
     // Clear 'disconnected' cursors
-    Object.keys(self.cursorsModule.cursors).forEach(function(cursorId) {
+    Object.keys(self.cursorsModule.cursors).forEach(function (cursorId) {
       if (!activeConnections[cursorId]) {
         self.cursorsModule.removeCursor(cursorId);
       }
@@ -92,19 +111,17 @@ export class TexteditorComponent implements OnInit, AfterViewInit {
     this.cursorService.update();
   }
 
-  ngOnInit() {
-  }
 
   ngAfterViewInit() {
     // this.userlistElem = this.userlistInputRef.nativeElement;
     this.usernameElem = this.usernameInputRef.nativeElement;
   }
-  onEditorBlured({editor,range}) {
+  onEditorBlured({ editor, range }) {
     this.sendCursorData(range);
     console.log('editor blur!', editor);
   }
 
-  onEditorFocused({editor,range}) {
+  onEditorFocused({ editor, range }) {
     this.sendCursorData(range);
     console.log('editor focus!', editor);
   }
@@ -140,10 +157,11 @@ export class TexteditorComponent implements OnInit, AfterViewInit {
     }
   }
 
-  connect_click(event){
+  connect_click(event) {
     this.cursorService.localConnection.name = this.usernameElem.value;
     this.cursorService.update();
     this.editor.enable();
+    this.showConnectPanel = false;
     // document.getElementById('connect-panel').style.display = 'none';
     // document.getElementById('users-panel').style.display = 'block';
     event.preventDefault();

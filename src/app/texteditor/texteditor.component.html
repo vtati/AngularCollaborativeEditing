@@ -1,6 +1,6 @@
 <div class="layout">
     <div class="info-container">
-        <div id="connect-panel">
+        <div id="connect-panel" [style.display]="showConnectPanel?'block':'none'">
             <h3>Username</h3>
             Set your username and connect to edit:<br><input #usernameInput id="usernameInput" type="text"><br>
             <button id="connect-btn" (click)="connect_click($event)">Connect</button>
