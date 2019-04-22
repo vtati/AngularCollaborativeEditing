@@ -5,17 +5,14 @@ var debug = require('debug')('quill-sharedb-cursors:cursors');
 
 module.exports = function (server) {
 
-  function notifyConnections(sourceId) {
-    var currConnection = connections.filter(c => c.id === sourceId)[0];
-    if (currConnection) {
-      connections.filter(c => c.documentId === currConnection.documentId).forEach(function (connection) {
+  function notifyConnections(sourceId,documentId) {
+      connections.filter(c => c.documentId === documentId).forEach(function (connection) {
         sessions[connection.id].send(JSON.stringify({
           id: connection.id,
           sourceId: sourceId,
           connections: connections
         }));
       });
-    }
   }
 
   var sessions = {};
@@ -77,19 +74,19 @@ module.exports = function (server) {
         debug('Connection update received:\n%O', data);
 
         // Notify all sessions
-        notifyConnections(data.id);
+        notifyConnections(data.id,data.documentId);
       }
     });
 
     ws.on('close', function (code, reason) {
-
+      var documentId;
       debug('Client connection closed (%s). (Code: %s, Reason: %s)', ws.id, code, reason);
 
       // Find connection index and remove it from hashtable
       if (~(connectionIndex = _.findIndex(connections, {
         'id': ws.id
       }))) {
-
+      documentId = connections[connectionIndex].documentId;
         debug('Connection removed:\n%O', connections[connectionIndex]);
 
         connections.splice(connectionIndex, 1);
@@ -99,7 +96,7 @@ module.exports = function (server) {
       delete sessions[ws.id];
 
       // Notify all connections
-      notifyConnections(ws.id);
+      notifyConnections(ws.id,documentId);
     });
 
     ws.on('error', function (error) {
