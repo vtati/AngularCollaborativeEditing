@@ -2,6 +2,7 @@ import { Component, OnInit, ViewEncapsulation, Inject, AfterViewInit, ElementRef
 import { ClientService } from './services/client.service';
 import { CursorService } from './services/cursorservice.service';
 import { Utils } from './utils/util';
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-texteditor',
   templateUrl: './texteditor.component.html',
@@ -28,7 +29,7 @@ export class TexteditorComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     let self = this;
     // Create local Doc instance mapped to 'examples' collection document with id 'counter'
-    this.clientService.doc = this.clientService.connection.get('documents', this.documentId);
+    this.clientService.doc = this.clientService.connection.get(environment.collectionname, this.documentId);
 
     this.clientService.doc.fetch(function (err) {
       if (err) throw err;
@@ -165,6 +166,10 @@ export class TexteditorComponent implements OnInit, AfterViewInit {
     // document.getElementById('connect-panel').style.display = 'none';
     // document.getElementById('users-panel').style.display = 'block';
     event.preventDefault();
+  }
+
+  trackByFn(index, item) { 
+    return item.id; 
   }
 
 }

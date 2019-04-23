@@ -1,7 +1,8 @@
-import { Injectable, EventEmitter } from '@angular/core';
+import { Injectable} from '@angular/core';
 import * as sharedb from 'sharedb/lib/client';
 import * as richText from 'rich-text';
 import * as ReconnectingWebSocket from 'reconnectingwebsocket';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class ClientService {
     let self=this;
     sharedb.types.register(richText.type);
     // Open WebSocket connection to ShareDB server
-    this.socket = new ReconnectingWebSocket(((location.protocol === 'https:') ? 'wss' : 'ws') + '://localhost:5000/sharedb');
+    this.socket = new ReconnectingWebSocket(((location.protocol === 'https:') ? 'wss://' : 'ws://') + environment.sharedbserver + '/sharedb');
     this.connection = new sharedb.Connection(this.socket);
 
 

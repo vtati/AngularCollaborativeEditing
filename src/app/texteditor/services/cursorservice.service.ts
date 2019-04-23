@@ -1,23 +1,10 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import * as ReconnectingWebSocket from 'reconnectingwebsocket';
+import { environment } from '../../../environments/environment';
+import { CursorConnection } from './cursorconnection';
 @Injectable({
   providedIn: 'root'
 })
-
-export class CursorConnection {
-  id: any;
-  range: any;
-  name: string;
-  color: any;
-  documentId: string;
-
-  constructor(name: string, color: any, documentId?: string) {
-    this.id = null;
-    this.name = name;
-    this.color = color;
-    this.documentId = documentId;
-  }
-}
 
 export class CursorService {
   id: any;
@@ -36,7 +23,8 @@ export class CursorService {
     var self = this;
 
     // this.socket = new ReconnectingWebSocket('ws://' + "localhost:5000/cursors");
-    this.socket = new ReconnectingWebSocket(((location.protocol === 'https:') ? 'wss' : 'ws') + '://localhost:5000/cursors');
+    this.socket = new ReconnectingWebSocket(((location.protocol === 'https:') ? 'wss://' : 'ws://') + environment.sharedbserver + '/cursors');
+
     this.localConnection = new CursorConnection(
       null,
       chance.color({
